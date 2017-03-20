@@ -3,35 +3,26 @@
 */
 
 const http = require('http');
+const domain = require('./domain.js');
+const groundControl = require('./groundControl.js');
 
 http.createServer((request, response) => {
 
+	response.writeHead(200, {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin' : '*'
+    });
+	
 	var body = [];
 	request.on('data', function(chunk) {
   		body.push(chunk);
 	}).on('end', function() {
   		body = Buffer.concat(body).toString();
-  		console.log(body);
-  		console.log(JSON.stringify(body));
+  		var worldState = new domain.WorldState(JSON.parse(body));
+  		var controls = groundControl.requestControls(worldState);
+  		response.write(JSON.stringify(controls));
+  		response.end();
 	});
-
-
-    response.writeHead(200, {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin' : '*'
-    });
-
-
-    var controls = {
-    	thrust: 0.99,
-    	rcs: {
-    		pitch: 0.01,
-    		yaw: 0.01
-    	}
-    };
-
-    response.write(JSON.stringify(controls));
-    response.end();
 
 }).listen(8080);
 

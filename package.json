@@ -1,0 +1,29 @@
+{
+  "name": "hellospace",
+  "version": "1.0.0",
+  "description": "hello space nodejs",
+  "main": "server.js",
+  "dependencies": {
+    "cannon": "^0.6.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Arch-vile/helloSpace.git"
+  },
+  "keywords": [
+    "nodejs",
+    "hellospace",
+    "reaktor"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Arch-vile/helloSpace/issues"
+  },
+  "homepage": "https://github.com/Arch-vile/helloSpace#readme"
+}
