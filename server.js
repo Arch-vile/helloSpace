@@ -18,9 +18,15 @@ http.createServer((request, response) => {
   		body.push(chunk);
 	}).on('end', function() {
   		body = Buffer.concat(body).toString();
-  		var worldState = new domain.WorldState(JSON.parse(body));
-  		var controls = groundControl.requestControls(worldState);
-  		response.write(JSON.stringify(controls));
+  		
+  		
+  		try {
+	  		var worldState = new domain.WorldState(JSON.parse(body));
+	  		var controls = groundControl.requestControls(worldState);
+	  		response.write(JSON.stringify(controls));
+  		}catch(err) {
+  			console.log('Failed to parse worldState from request body: [' + body + ']');
+  		}
   		response.end();
 	});
 
