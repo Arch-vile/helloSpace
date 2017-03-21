@@ -4,13 +4,20 @@
 */
 
 return function GoToMoon(state) {
-   return controls(state);
+   return requestControls(state);
 }
 
-function controls(state) {
-  var xhr = new XMLHttpRequest();
-  xhr.open('POST', "//localhost:8080/", false);
-  xhr.send(JSON.stringify(state));
-    
-  return new Controls(JSON.parse(xhr.response));
+function requestControls(state) {
+  console.log("Requesting controls from ground control.")
+  
+  try {
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', "//localhost:8080/", false);
+    xhr.send(JSON.stringify(state));
+  
+    return new Controls(JSON.parse(xhr.response));
+  } catch(err) {
+    console.log("Ground control unresponsive. Houston, we have a problem.");
+    return new Controls({});
+  }
 }
