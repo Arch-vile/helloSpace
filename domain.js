@@ -2,7 +2,7 @@ var cannon = require('cannon');
 
 function WorldState(args) {
 	this.rocket = new RocketState(args.rocket);
-	this.planetStates = planets(args.planetStates)
+	this.planetStates = planets(args.planetStates);
 
 	function planets(args) {
 		var planets = [];
@@ -13,12 +13,21 @@ function WorldState(args) {
 	}
 }
 
+WorldState.prototype.earth = function() {
+	for(planet of this.planetStates) {
+		if(planet.name == "Earth2") {
+			return planet;
+		}
+	}
+
+}
+
 function RocketState(args) {
 	this.mass = args.mass;
-	this.position = new cannon.Vec3(args.position);
-	this.rotation = new cannon.Quaternion(args.rotation);
-	this.velocity = new cannon.Vec3(args.velocity);
-	this.angularVelocity = new cannon.Vec3(args.angularVelocity);
+	this.position = vec3(args.position);
+	this.rotation = quaternion(args.rotation);
+	this.velocity = vec3(args.velocity);
+	this.angularVelocity = vec3(args.angularVelocity);
 	this.exploded = args.exploded;
 	this.fuel = new Fuel(args.fuel);
 
@@ -34,10 +43,10 @@ function PlanetState(args) {
 	this.name = args.name;
 	this.mass = args.mass;
 	this.radius = args.radius;
-	this.position = new cannon.Vec3(args.position);
-	this.rotation = new cannon.Quaternion(args.rotation);
-	this.velocity = new cannon.Vec3(args.velocity);
-	this.angularVelocity = new cannon.Vec3(args.angularVelocity);
+	this.position = vec3(args.position);
+	this.rotation = quaternion(args.rotation);
+	this.velocity = vec3(args.velocity);
+	this.angularVelocity = vec3(args.angularVelocity);
 }
 
 function Controls(args) {
@@ -59,6 +68,14 @@ function Rcs(args) {
 
 Rcs.fromComponents = function(yaw,pitch,roll) {
 	return new Rcs({yaw: yaw,  pitch: pitch, roll: roll});
+}
+
+function vec3(args) {
+	return new cannon.Vec3(args.x, args.y, args.z);
+}
+
+function quaternion(args) {
+	return new cannon.Quaternion(args.x, args.y, args.z, args.w);
 }
 
 module.exports.WorldState = WorldState

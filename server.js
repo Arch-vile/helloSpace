@@ -19,14 +19,15 @@ http.createServer((request, response) => {
 	}).on('end', function() {
   		body = Buffer.concat(body).toString();
   		
-  		
+  		worldState = {};
   		try {
-	  		var worldState = new domain.WorldState(JSON.parse(body));
-	  		var controls = groundControl.requestControls(worldState);
-	  		response.write(JSON.stringify(controls));
+	  		worldState = new domain.WorldState(JSON.parse(body));
   		}catch(err) {
-  			console.log('Failed to parse worldState from request body: [' + body + ']');
+  			console.log('Failed to parse worldState from request body: [' + body + '] due to ' + err);
   		}
+
+  		var controls = groundControl.requestControls(worldState);
+	  	response.write(JSON.stringify(controls));
   		response.end();
 	});
 

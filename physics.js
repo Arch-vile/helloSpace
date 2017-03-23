@@ -14,6 +14,10 @@ var Physics = {
 	    ]
 	},
 
+	distance: function(body1, body2) {
+		return body1.position.distanceTo(body2.position);
+	},
+
 	deg2rad: function deg2rad(degrees) {
 	  return degrees * (Math.PI / 180)
 	}
