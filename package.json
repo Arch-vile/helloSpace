@@ -4,6 +4,7 @@
   "description": "hello space nodejs",
   "main": "server.js",
   "dependencies": {
+    "blessed": "^0.1.81",
     "cannon": "^0.6.2"
   },
   "devDependencies": {},

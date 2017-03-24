@@ -2,6 +2,7 @@ const constants = require('./constants.js');
 const physics = require('./physics.js');
 const domain = require('./domain.js');
 const cannon = require('cannon');
+const controlBoard = require('./controlBoard.js');
 
 var GroundControl = {
 	requestControls: function(worldState) {
@@ -21,7 +22,7 @@ var GroundControl = {
 		}
 
 		var distanceToEarth = physics.distance(worldState.rocket, worldState.earth());
-		console.log(distanceToEarth);
+		controlBoard.distance("Earth", 100);
 
 		//this.printRocketRotation(worldState.rocket);
 

@@ -12,7 +12,8 @@ http.createServer((request, response) => {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin' : '*'
     });
-	
+
+
 	var body = [];
 	request.on('data', function(chunk) {
   		body.push(chunk);
