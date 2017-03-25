@@ -6,7 +6,8 @@
   "dependencies": {
     "blessed": "^0.1.81",
     "cannon": "^0.6.2",
-    "numeral": "^2.0.4"
+    "numeral": "^2.0.4",
+    "sleep": "^5.1.0"
   },
   "devDependencies": {},
   "scripts": {

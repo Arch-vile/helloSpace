@@ -10,6 +10,10 @@ var pretty = function(number) {
 var ControlBoard = {
 	distance: function(target,distance) {
 		distanceBox.setContent(target + ": " + pretty(distance));
+		this.render();
+	},
+
+	render: function() {
 		screen.render();
 	},
 
@@ -20,21 +24,22 @@ var ControlBoard = {
 			'\nattitude: ' + pretty(target.z) + 
 			'\nbank: ' + pretty(target.x));
 	
-		screen.render();
+		this.render();
 	},
 
 	controls: function(controls) {
 		controlBox.setContent(
-			'thrust: ' + controls.thrust + '\n' +
-			'yaw:    ' + controls.rcs.yaw + '\n' +
-			'pitch:  ' + controls.rcs.pitch + '\n' +
-			'roll:   ' + controls.rcs.roll
-		);	
+			'thrust: ' + pretty(controls.thrust) + '\n' +
+			'yaw:    ' + pretty(controls.rcs.yaw) + '\n' +
+			'pitch:  ' + pretty(controls.rcs.pitch) + '\n' +
+			'roll:   ' + pretty(controls.rcs.roll)
+		);
+		this.render();	
 	},
 
 	freeText: function(text) {
 		freeTextBox.setContent('' + text);
-		screen.render();
+		this.render();
 	}
 }
 
@@ -46,10 +51,24 @@ var screen = blessed.screen({
 
 screen.title = 'my window title';
 
+
+
+var layout = blessed.layout({
+  layout: 'grid',
+  top: 'left',
+  left: 'up',
+  border: 'line',
+  style: {
+    bg: 'red',
+    border: {
+      fg: 'blue'
+    }
+  }});
+screen.append(layout);
+
 // Create a box perfectly centered horizontally and vertically.
 var distanceBox = blessed.box({
-  top: '0',
-  width: '200',
+  width: '300',
   height: '200',
   content: '<distances>',
   label: 'Distances',
@@ -68,12 +87,12 @@ var distanceBox = blessed.box({
     }
   }
 });
-
+layout.append(distanceBox);
 
 
 // Create a box perfectly centered horizontally and vertically.
 var rotationBox = blessed.box({
-  top: '200',
+	parent: layout,
   width: '200',
   height: '200',
   content: '<rotations>',
@@ -93,10 +112,9 @@ var rotationBox = blessed.box({
     }
   }
 });
+layout.append(rotationBox);
 
 var controlBox = blessed.box({
-  top: '0',
-  left: '200',
   width: '200',
   height: '250',
   content: '<controls>',
@@ -116,12 +134,11 @@ var controlBox = blessed.box({
     }
   }
 });
-
+layout.append(controlBox);
 
 var freeTextBox = blessed.box({
-  top: '400',
-  width: '600',
   height: '200',
+  width: '90%',
   content: '<free>',
   label: 'Free box',
   tags: true,
@@ -139,13 +156,9 @@ var freeTextBox = blessed.box({
     }
   }
 });
+layout.append(freeTextBox);
 
 
-
-screen.append(rotationBox);
-screen.append(distanceBox);
-screen.append(freeTextBox);
-screen.append(controlBox);
 
 screen.key(['escape', 'q', 'C-c'], function(ch, key) {
   return process.exit(0);

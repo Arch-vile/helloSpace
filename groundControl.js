@@ -3,14 +3,14 @@ const physics = require('./physics.js');
 const domain = require('./domain.js');
 const cannon = require('cannon');
 const controlBoard = require('./controlBoard.js');
-
+var sleep = require('sleep');
 
 var rotationStabilizer = {
 	current: 0,
 	previous: 0,
 	currentSpeed: 0,
 	previousSpeed: 0,
-	propulsionStrength: 0,
+	propulsionStrength: 0.04774648016449,
 
 	sample: function(rotation,propulsion) {	
 		var euler = physics.toEuler(rotation);
@@ -20,24 +20,41 @@ var rotationStabilizer = {
 
 
 	sampleWithEuler: function(angle,propulsion) {
+
 		this.previous = this.current;
 		this.current = angle;
 
-		var delta = this.current - this.previous;
-		if(delta < 0) delta = 360 - delta; 
+		if(Math.abs(this.previous-this.current) > 180) {
+			if(this.previous > this.current) 
+				this.previous = this.previous - 360;
+			else
+				this.previous = this.previous + 360; 
+		}
 
+
+		var delta = this.current - this.previous;
 		this.previousSpeed = this.currentSpeed;
 		this.currentSpeed = delta;
 
-		if(propulsion != 0)
-			this.propulsionStrength = (1.0 / propulsion) * Math.abs(this.currentSpeed-this.previousSpeed);
+		//if(propulsion != 0)
+		//	this.propulsionStrength = Math.abs((1.0 / propulsion) * Math.abs(this.currentSpeed-this.previousSpeed));
 
 	},
 
 	stabilize: function() {
-		var fix = (this.currentSpeed / this.propulsionStrength);
-		if(fix > 1) fix = 1;
-		return -1 * fix;
+		if(Math.abs(this.currentSpeed) < 0.0001)
+			return 0;
+
+		var fix = -1 * (this.currentSpeed / this.propulsionStrength);
+		if(fix >= 1) {
+			fix = 1;
+		}
+		
+		if(fix < -1){ 
+			fix = -1;
+		}
+
+		return fix;
 	}
 	
 
@@ -72,7 +89,7 @@ var GroundControl = {
 		if(distanceEarthSurface > 100) {
 			yaw = 0;
 			roll = 0;
-			pitch = -0.1;//rotationStabilizer.stabilize();
+			pitch = rotationStabilizer.stabilize();
 			thrust = 0;
 		}
 
@@ -82,12 +99,14 @@ var GroundControl = {
 		rotationStabilizer.sample(rotation,pitch);
 
 
-		controlBoard.rotation(worldState.rocket.rotation);
-		controlBoard.distance("Earth", distanceEarthSurface);
-		controlBoard.freeText(rotationStabilizer.currentSpeed + '\n' + rotationStabilizer.propulsionStrength );
+
+
 
 		var rcs = new domain.Rcs.fromComponents( yaw , pitch , roll);
 		var controls = domain.Controls.fromComponents(thrust, rcs);
+		controlBoard.rotation(worldState.rocket.rotation);
+		controlBoard.distance("Earth", distanceEarthSurface);
+		controlBoard.freeText(rotationStabilizer.currentSpeed + '\n' + rotationStabilizer.propulsionStrength );
 		controlBoard.controls(controls);
 
 		return controls;
@@ -98,5 +117,6 @@ var GroundControl = {
 		rocketState.rotation.toEuler(target);
 	}
 };
+
 
 module.exports = GroundControl;
