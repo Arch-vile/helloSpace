@@ -30,6 +30,24 @@ var Physics = {
 		return target;
 	},
 
+	// evaluated as: q1 * q2
+	qMult: function(q1,q2) {
+		var target = new cannon.Quaternion(0,0,0);
+		q1.mult(q2,target);
+		return target;
+	},
+
+
+	qMultS: function(scalar,quaternion) {
+		return new cannon.Quaternion(scalar*quaternion.x, scalar*quaternion.y, scalar*quaternion.z,scalar*quaternion.w);
+	},
+
+	conjugate: function(quaternion) {
+		var target =  new cannon.Quaternion(0,0,0,1);
+		quaternion.conjugate(target);
+		return target;
+	},
+
 	
 
 	

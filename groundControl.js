@@ -2,8 +2,16 @@ const constants = require('./constants.js');
 const physics = require('./physics.js');
 const domain = require('./domain.js');
 const cannon = require('cannon');
+const numeral = require('numeral');
+
 //const controlBoard = require('./controlBoard.js');
 var sleep = require('sleep');
+
+
+var prettyInt = function(number) {
+	return numeral(number).format('0.0');
+}
+
 
 function RotationStabilizer() {
 	this.current=0;
@@ -43,12 +51,19 @@ function RotationStabilizer() {
 
 	};
 
+	this.stabilized = false;
 	this.stabilize = function(worldState) {
 		this.sample(worldState.rocket.rotation);
 
-		if(Math.abs(this.currentSpeed) < 0.0001)
-			return 0;
+		if(this.stabilized || Math.abs(this.currentSpeed) < 0.0001) {
+			console.log("TEBOIL!");
+			this.stabilized = true;
+			var rcs = new domain.Rcs.fromComponents( 0.0 , 0.0 , 0.0);
+			var controls = domain.Controls.fromComponents(0.0, rcs);
+			return controls;
+		}
 
+		console.log("orig: " + this.currentSpeed);
 		var fix = -1 * (this.currentSpeed / this.propulsionStrength);
 		if(fix >= 1) {
 			fix = 1;
@@ -58,7 +73,8 @@ function RotationStabilizer() {
 			fix = -1;
 		}
 
-		var rcs = new domain.Rcs.fromComponents( 0.0 , fix , 0.0);
+
+		var rcs = new domain.Rcs.fromComponents( 0.0 , 0.0 , 0.0);
 		var controls = domain.Controls.fromComponents(0.0, rcs);
 		return controls;
 	};
@@ -97,9 +113,17 @@ function OrbitControl() {
 	this.turn = function(worldState,next) {
 		
 		this.turnTics++;
+		var rcs = new domain.Rcs.fromComponents( 0.0 , 0.0 , 0.0);
+		var controls = domain.Controls.fromComponents(0, rcs);
+
 		if(this.turnTics < 20) {
-			var rcs = new domain.Rcs.fromComponents( 0.0 , 0.9 , 0.0);
-			var controls = domain.Controls.fromComponents(0, rcs);
+			controls.rcs.pitch = 1.0;
+			controls.rcs.yaw = 0.0;
+			controls.rcs.roll = 0.0;
+			return controls;
+		}
+
+		if(this.turnTics < 100) {
 			return controls;
 		}
 
@@ -115,11 +139,34 @@ var GroundControl = {
 	stabilizer: new RotationStabilizer(),
 
 
-	requestControls: function(worldState) {
-	
-		var controls = this.orbitControl.toOrbit(worldState, () => { return this.stabilizer.stabilize(worldState); } );
+	current: null,
+	previous: null,
 
-		var altitude = physics.distance(worldState.rocket, worldState.earth()) - worldState.earth().radius;
+	requestControls: function(worldState) {
+
+
+		var rotation = worldState.rocket.rotation;
+
+		this.previous = this.current;
+		if(this.previous == null) this.previous = rotation;
+		this.current = rotation;
+
+		var dx = this.current.x - this.previous.x;
+		var dy = this.current.y - this.previous.y;
+		var dz = this.current.z - this.previous.z;
+		var dw = this.current.w - this.previous.w;
+		var dq = new cannon.Quaternion(dx,dy,dz,dw);
+		dq.normalize();
+		rotation.normalize();
+		
+		var conj = physics.conjugate(rotation);
+		var ang = physics.qMult( physics.qMultS(2,dq), conj );
+		var angEul = physics.toEuler(ang); 
+
+		var degrees = (180-physics.rad2deg(angEul.y))*2;
+		console.log("new : " + degrees);
+
+		var controls = this.orbitControl.toOrbit(worldState, () => { return this.stabilizer.stabilize(worldState); } );
 
 		//controlBoard.rotation(worldState.rocket.rotation);
 		//controlBoard.distance("Earth", altitude);
